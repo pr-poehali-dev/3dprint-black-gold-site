@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -11,62 +13,141 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  image: string;
 }
 
-interface Service {
+interface Product {
   id: number;
-  title: string;
+  name: string;
   description: string;
-  price: string;
+  price: number;
+  category: string;
+  image: string;
+  inStock: boolean;
   features: string[];
-  icon: string;
 }
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState('home');
+  const [activeSection, setActiveSection] = useState('catalog');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const services: Service[] = [
+  const products: Product[] = [
     {
       id: 1,
-      title: '3D Печать по вашей модели',
-      description: 'Изготовим любую деталь по вашей 3D модели',
-      price: 'от 500₽',
-      features: ['FDM и SLA печать', 'Различные материалы', 'Постобработка', 'Срок 1-3 дня'],
-      icon: 'Printer'
+      name: 'PLA пластик (1кг)',
+      description: 'Высококачественный PLA филамент для FDM печати',
+      price: 1500,
+      category: 'materials',
+      image: '🎨',
+      inStock: true,
+      features: ['Диаметр 1.75мм', 'Точность ±0.05мм', 'Различные цвета']
     },
     {
       id: 2,
-      title: '3D Моделирование',
-      description: 'Создадим 3D модель по вашему эскизу',
-      price: 'от 2000₽',
-      features: ['Техническое моделирование', 'Прототипирование', 'Чертежи', 'Консультация'],
-      icon: 'Box'
+      name: 'ABS пластик (1кг)',
+      description: 'Прочный ABS филамент для профессиональной печати',
+      price: 1800,
+      category: 'materials',
+      image: '🔧',
+      inStock: true,
+      features: ['Диаметр 1.75мм', 'Высокая прочность', 'Термостойкий']
     },
     {
       id: 3,
-      title: 'Прототипирование',
-      description: 'Быстрое создание прототипов изделий',
-      price: 'от 3000₽',
-      features: ['Функциональные прототипы', 'Тестирование', 'Доработка', 'Серийное производство'],
-      icon: 'Lightbulb'
+      name: 'PETG пластик (1кг)',
+      description: 'Универсальный PETG для прочных изделий',
+      price: 2000,
+      category: 'materials',
+      image: '💎',
+      inStock: true,
+      features: ['Диаметр 1.75мм', 'Влагостойкий', 'Ударопрочный']
+    },
+    {
+      id: 4,
+      name: '3D печать по модели',
+      description: 'Печать вашей 3D модели на профессиональном оборудовании',
+      price: 500,
+      category: 'services',
+      image: '🖨️',
+      inStock: true,
+      features: ['FDM/SLA печать', 'Срок 1-3 дня', 'Постобработка']
+    },
+    {
+      id: 5,
+      name: '3D моделирование',
+      description: 'Создание 3D модели по вашим эскизам и чертежам',
+      price: 2500,
+      category: 'services',
+      image: '📐',
+      inStock: true,
+      features: ['Техническое моделирование', 'Оптимизация', 'Чертежи']
+    },
+    {
+      id: 6,
+      name: 'Прототипирование',
+      description: 'Разработка и печать функциональных прототипов',
+      price: 3500,
+      category: 'services',
+      image: '⚙️',
+      inStock: true,
+      features: ['Полный цикл', 'Тестирование', 'Доработка']
+    },
+    {
+      id: 7,
+      name: 'Набор сопел 0.2-0.8мм',
+      description: 'Комплект латунных сопел для 3D принтера',
+      price: 800,
+      category: 'parts',
+      image: '🔩',
+      inStock: true,
+      features: ['5 размеров', 'Латунь', 'Для MK8']
+    },
+    {
+      id: 8,
+      name: 'Стеклянный стол 220x220',
+      description: 'Стеклянная платформа для 3D принтера',
+      price: 1200,
+      category: 'parts',
+      image: '🪟',
+      inStock: true,
+      features: ['Закаленное стекло', 'Ровная поверхность', 'Легкая очистка']
+    },
+    {
+      id: 9,
+      name: 'Смола для SLA (1л)',
+      description: 'Фотополимерная смола для SLA/DLP печати',
+      price: 4500,
+      category: 'materials',
+      image: '🧪',
+      inStock: true,
+      features: ['Высокая детализация', 'Быстрое отверждение', 'Разные цвета']
     }
   ];
 
-  const addToCart = (service: Service) => {
-    const existingItem = cart.find(item => item.id === service.id);
+  const categories = [
+    { id: 'all', name: 'Все товары', icon: 'Grid3x3' },
+    { id: 'materials', name: 'Материалы', icon: 'Palette' },
+    { id: 'services', name: 'Услуги', icon: 'Wrench' },
+    { id: 'parts', name: 'Запчасти', icon: 'Cog' }
+  ];
+
+  const addToCart = (product: Product) => {
+    const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === service.id 
+      setCart(cart.map(item =>
+        item.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
-      setCart([...cart, { 
-        id: service.id, 
-        name: service.title, 
-        price: parseInt(service.price.replace(/\D/g, '')), 
-        quantity: 1 
+      setCart([...cart, {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.image
       }]);
     }
   };
@@ -75,352 +156,361 @@ const Index = () => {
     setCart(cart.filter(item => item.id !== id));
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const updateQuantity = (id: number, quantity: number) => {
+    if (quantity === 0) {
+      removeFromCart(id);
+    } else {
+      setCart(cart.map(item =>
+        item.id === id ? { ...item, quantity } : item
+      ));
+    }
+  };
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'home':
-        return (
-          <div className="space-y-16">
-            <section className="min-h-[80vh] flex flex-col justify-center items-center text-center px-4 animate-fade-in">
-              <Badge className="mb-6 bg-gradient-to-r from-primary to-yellow-500 text-black border-0 px-6 py-2 text-sm hover:opacity-90">
-                Премиум 3D Печать
-              </Badge>
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 font-heading">
-                LorinPrint3D
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl">
-                Профессиональная 3D печать по вашим моделям. Высокое качество, быстрые сроки, доступные цены.
-              </p>
-              <div className="flex gap-4 flex-wrap justify-center">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-primary to-yellow-500 text-black hover:opacity-90 px-8 py-6 text-lg"
-                  onClick={() => setActiveSection('services')}
-                >
-                  <Icon name="Zap" className="mr-2" size={20} />
-                  Заказать печать
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-primary text-primary hover:bg-primary hover:text-black px-8 py-6 text-lg"
-                  onClick={() => setActiveSection('catalog')}
-                >
-                  Смотреть работы
-                </Button>
-              </div>
-            </section>
+  const getTotalPrice = () => {
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
 
-            <section className="grid md:grid-cols-3 gap-8 px-4">
-              <Card className="bg-card border-border transition-transform duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center mb-4">
-                    <Icon name="Clock" className="text-black" size={24} />
-                  </div>
-                  <CardTitle>Быстро</CardTitle>
-                  <CardDescription>Срок печати от 1 дня</CardDescription>
-                </CardHeader>
-              </Card>
+  const filteredProducts = selectedCategory === 'all'
+    ? products
+    : products.filter(p => p.category === selectedCategory);
 
-              <Card className="bg-card border-border transition-transform duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center mb-4">
-                    <Icon name="Award" className="text-black" size={24} />
-                  </div>
-                  <CardTitle>Качественно</CardTitle>
-                  <CardDescription>Профессиональное оборудование</CardDescription>
-                </CardHeader>
-              </Card>
+  const renderCatalog = () => {
+    return (
+      <div className="px-4 py-8 max-w-7xl mx-auto animate-fade-in">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 font-heading bg-gradient-to-r from-primary to-yellow-600 bg-clip-text text-transparent">
+            LorinPrint3D
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Магазин материалов и услуг 3D печати
+          </p>
+        </div>
 
-              <Card className="bg-card border-border transition-transform duration-300 hover:scale-105">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center mb-4">
-                    <Icon name="Wallet" className="text-black" size={24} />
-                  </div>
-                  <CardTitle>Выгодно</CardTitle>
-                  <CardDescription>Доступные цены на услуги</CardDescription>
-                </CardHeader>
-              </Card>
-            </section>
-          </div>
-        );
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          {categories.map(cat => (
+            <Button
+              key={cat.id}
+              variant={selectedCategory === cat.id ? 'default' : 'outline'}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={selectedCategory === cat.id ? 'bg-gradient-to-r from-primary to-yellow-600 text-black' : ''}
+            >
+              <Icon name={cat.icon} size={18} className="mr-2" />
+              {cat.name}
+            </Button>
+          ))}
+        </div>
 
-      case 'catalog':
-        return (
-          <div className="px-4 py-8 animate-fade-in">
-            <h2 className="text-4xl font-bold mb-8 font-heading">Наши работы</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <Card key={item} className="bg-card border-border transition-transform duration-300 hover:scale-105 overflow-hidden">
-                  <div className="aspect-square bg-secondary flex items-center justify-center">
-                    <Icon name="Box" size={64} className="text-primary" />
-                  </div>
-                  <CardHeader>
-                    <CardTitle>Проект {item}</CardTitle>
-                    <CardDescription>Функциональный прототип изделия</CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'services':
-        return (
-          <div className="px-4 py-8 animate-fade-in">
-            <h2 className="text-4xl font-bold mb-4 font-heading">Наши услуги</h2>
-            <p className="text-muted-foreground mb-8 text-lg">Выберите подходящую услугу и добавьте в корзину</p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <Card key={service.id} className="bg-card border-border transition-transform duration-300 hover:scale-105 flex flex-col">
-                  <CardHeader>
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center mb-4">
-                      <Icon name={service.icon as any} className="text-black" size={32} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map(product => (
+            <Card key={product.id} className="group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 border-border bg-card">
+              <CardHeader>
+                <div className="text-6xl mb-4 text-center group-hover:scale-110 transition-transform">
+                  {product.image}
+                </div>
+                <CardTitle className="text-xl">{product.name}</CardTitle>
+                <CardDescription>{product.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 mb-4">
+                  {product.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center text-sm text-muted-foreground">
+                      <Icon name="Check" size={16} className="mr-2 text-primary" />
+                      {feature}
                     </div>
-                    <CardTitle className="text-2xl">{service.title}</CardTitle>
-                    <CardDescription className="text-base">{service.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent mb-4">{service.price}</div>
-                    <ul className="space-y-2">
-                      {service.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <Icon name="Check" size={16} className="text-primary mt-0.5" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      className="w-full bg-gradient-to-r from-primary to-yellow-500 text-black hover:opacity-90"
-                      onClick={() => addToCart(service)}
-                    >
-                      <Icon name="ShoppingCart" className="mr-2" size={18} />
-                      Добавить в корзину
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        );
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-primary">{product.price}₽</span>
+                  {product.inStock && (
+                    <Badge variant="outline" className="border-primary text-primary">
+                      В наличии
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-yellow-600 hover:opacity-90 text-black font-semibold"
+                  onClick={() => addToCart(product)}
+                >
+                  <Icon name="ShoppingCart" size={18} className="mr-2" />
+                  В корзину
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
-      case 'about':
-        return (
-          <div className="px-4 py-8 max-w-4xl mx-auto animate-fade-in">
-            <h2 className="text-4xl font-bold mb-6 font-heading">О нас</h2>
-            <div className="space-y-6 text-lg text-muted-foreground">
-              <p>
-                <span className="bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent font-bold text-2xl">LorinPrint3D</span> — профессиональная студия 3D печати, 
-                специализирующаяся на изготовлении деталей и прототипов по индивидуальным моделям клиентов.
-              </p>
-              <p>
-                Мы используем современное оборудование и качественные материалы для обеспечения высокой точности 
-                и надежности изготавливаемых изделий.
-              </p>
-              <div className="grid md:grid-cols-2 gap-4 pt-6">
-                <div className="flex items-start gap-3">
-                  <Icon name="Target" className="text-primary mt-1" size={24} />
-                  <div>
-                    <h3 className="font-bold text-foreground mb-1">Наша миссия</h3>
-                    <p className="text-sm">Делать 3D печать доступной и качественной для каждого</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Icon name="Users" className="text-primary mt-1" size={24} />
-                  <div>
-                    <h3 className="font-bold text-foreground mb-1">Опыт</h3>
-                    <p className="text-sm">Более 500 успешно реализованных проектов</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'contacts':
-        return (
-          <div className="px-4 py-8 max-w-2xl mx-auto animate-fade-in">
-            <h2 className="text-4xl font-bold mb-8 font-heading">Контакты</h2>
-            <Card className="bg-card border-border">
-              <CardContent className="pt-6 space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center flex-shrink-0">
-                    <Icon name="Phone" className="text-black" size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Телефон</h3>
-                    <p className="text-muted-foreground">+7 (999) 123-45-67</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center flex-shrink-0">
-                    <Icon name="Mail" className="text-black" size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Email</h3>
-                    <p className="text-muted-foreground">info@3dpritok.ru</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center flex-shrink-0">
-                    <Icon name="MapPin" className="text-black" size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Адрес</h3>
-                    <p className="text-muted-foreground">г. Москва, ул. Примерная, д. 1</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center flex-shrink-0">
-                    <Icon name="Clock" className="text-black" size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Режим работы</h3>
-                    <p className="text-muted-foreground">Пн-Пт: 9:00 - 18:00</p>
-                  </div>
-                </div>
+  const renderAbout = () => {
+    return (
+      <div className="px-4 py-8 max-w-4xl mx-auto animate-fade-in">
+        <h2 className="text-4xl font-bold mb-8 font-heading">О нас</h2>
+        <div className="space-y-6 text-lg text-muted-foreground">
+          <p>
+            <span className="bg-gradient-to-r from-primary to-yellow-600 bg-clip-text text-transparent font-bold text-2xl">LorinPrint3D</span> — профессиональный магазин материалов и услуг для 3D печати.
+          </p>
+          <p>
+            Мы предлагаем широкий ассортимент качественных материалов для FDM и SLA печати, 
+            комплектующие для 3D принтеров, а также профессиональные услуги по печати и моделированию.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <Card className="text-center border-primary/20">
+              <CardHeader>
+                <div className="text-4xl mb-2">🏆</div>
+                <CardTitle className="text-primary">500+</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Довольных клиентов</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center border-primary/20">
+              <CardHeader>
+                <div className="text-4xl mb-2">⚡</div>
+                <CardTitle className="text-primary">24/7</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Быстрая доставка</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center border-primary/20">
+              <CardHeader>
+                <div className="text-4xl mb-2">✨</div>
+                <CardTitle className="text-primary">100%</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Качество товаров</p>
               </CardContent>
             </Card>
           </div>
-        );
+        </div>
+      </div>
+    );
+  };
 
-      default:
-        return null;
-    }
+  const renderContacts = () => {
+    return (
+      <div className="px-4 py-8 max-w-3xl mx-auto animate-fade-in">
+        <h2 className="text-4xl font-bold mb-8 font-heading">Контакты</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Icon name="MapPin" className="mr-2 text-primary" size={24} />
+                Адрес
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">г. Москва, ул. 3D Печати, д. 123</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Icon name="Phone" className="mr-2 text-primary" size={24} />
+                Телефон
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">+7 (999) 123-45-67</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Icon name="Mail" className="mr-2 text-primary" size={24} />
+                Email
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">info@lorinprint3d.ru</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Icon name="Clock" className="mr-2 text-primary" size={24} />
+                Режим работы
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Пн-Пт: 9:00 - 20:00<br/>Сб-Вс: 10:00 - 18:00</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-8 border-primary/20">
+          <CardHeader>
+            <CardTitle>Написать нам</CardTitle>
+            <CardDescription>Есть вопросы? Оставьте сообщение и мы свяжемся с вами</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4">
+              <div>
+                <Label htmlFor="name">Имя</Label>
+                <Input id="name" placeholder="Ваше имя" />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="your@email.com" />
+              </div>
+              <div>
+                <Label htmlFor="message">Сообщение</Label>
+                <Textarea id="message" placeholder="Ваше сообщение..." rows={4} />
+              </div>
+              <Button className="w-full bg-gradient-to-r from-primary to-yellow-600 text-black font-semibold hover:opacity-90">
+                Отправить
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveSection('home')}>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveSection('catalog')}>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-600 flex items-center justify-center">
               <Icon name="Printer" className="text-black" size={20} />
             </div>
             <span className="text-xl font-bold font-heading">LorinPrint3D</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
-            {[
-              { id: 'home', label: 'Главная', icon: 'Home' },
-              { id: 'catalog', label: 'Каталог', icon: 'Grid' },
-              { id: 'services', label: 'Услуги', icon: 'Settings' },
-              { id: 'about', label: 'О нас', icon: 'Info' },
-              { id: 'contacts', label: 'Контакты', icon: 'Mail' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  activeSection === item.id ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            <Button
+              variant={activeSection === 'catalog' ? 'default' : 'ghost'}
+              onClick={() => setActiveSection('catalog')}
+              className={activeSection === 'catalog' ? 'bg-gradient-to-r from-primary to-yellow-600 text-black' : ''}
+            >
+              <Icon name="ShoppingBag" size={18} className="mr-2" />
+              Каталог
+            </Button>
+            <Button
+              variant={activeSection === 'about' ? 'default' : 'ghost'}
+              onClick={() => setActiveSection('about')}
+              className={activeSection === 'about' ? 'bg-gradient-to-r from-primary to-yellow-600 text-black' : ''}
+            >
+              О нас
+            </Button>
+            <Button
+              variant={activeSection === 'contacts' ? 'default' : 'ghost'}
+              onClick={() => setActiveSection('contacts')}
+              className={activeSection === 'contacts' ? 'bg-gradient-to-r from-primary to-yellow-600 text-black' : ''}
+            >
+              Контакты
+            </Button>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="relative border-primary">
-                  <Icon name="ShoppingCart" size={20} />
-                  {cartCount > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-gradient-to-r from-primary to-yellow-500 text-black border-0">
-                      {cartCount}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="bg-card border-border">
-                <SheetHeader>
-                  <SheetTitle>Корзина</SheetTitle>
-                  <SheetDescription>
-                    {cartCount > 0 ? `Товаров в корзине: ${cartCount}` : 'Корзина пустая'}
-                  </SheetDescription>
-                </SheetHeader>
+          <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="relative">
+                <Icon name="ShoppingCart" size={20} />
+                {cart.length > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-gradient-to-r from-primary to-yellow-600 text-black border-0">
+                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-lg">
+              <SheetHeader>
+                <SheetTitle>Корзина</SheetTitle>
+                <SheetDescription>
+                  {cart.length === 0 ? 'Ваша корзина пуста' : `Товаров: ${cart.length}`}
+                </SheetDescription>
+              </SheetHeader>
+              
+              {cart.length > 0 ? (
                 <div className="mt-8 space-y-4">
-                  {cart.map((item) => (
-                    <Card key={item.id} className="bg-secondary border-border">
-                      <CardContent className="pt-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-sm">{item.name}</h4>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            <Icon name="X" size={14} />
-                          </Button>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">x{item.quantity}</span>
-                          <span className="font-bold text-primary">{item.price * item.quantity}₽</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {cartCount > 0 && (
-                    <>
-                      <Separator />
-                      <div className="flex justify-between items-center text-lg font-bold">
-                        <span>Итого:</span>
-                        <span className="bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent text-2xl">{cartTotal}₽</span>
+                  <div className="space-y-4 max-h-[50vh] overflow-y-auto">
+                    {cart.map(item => (
+                      <Card key={item.id} className="border-border">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div className="text-3xl">{item.image}</div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold">{item.name}</h4>
+                              <p className="text-sm text-primary font-bold">{item.price}₽</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
+                                <Icon name="Minus" size={14} />
+                              </Button>
+                              <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
+                                <Icon name="Plus" size={14} />
+                              </Button>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeFromCart(item.id)}
+                            >
+                              <Icon name="Trash2" size={16} className="text-destructive" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-lg font-semibold">Итого:</span>
+                      <span className="text-2xl font-bold text-primary">{getTotalPrice()}₽</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="customer-name">Ваше имя</Label>
+                        <Input id="customer-name" placeholder="Иван Иванов" />
                       </div>
-                      <Button className="w-full bg-gradient-to-r from-primary to-yellow-500 text-black hover:opacity-90" size="lg">
+                      <div>
+                        <Label htmlFor="customer-phone">Телефон</Label>
+                        <Input id="customer-phone" placeholder="+7 (999) 123-45-67" />
+                      </div>
+                      <div>
+                        <Label htmlFor="customer-email">Email</Label>
+                        <Input id="customer-email" type="email" placeholder="your@email.com" />
+                      </div>
+                      <Button className="w-full bg-gradient-to-r from-primary to-yellow-600 text-black font-semibold hover:opacity-90">
+                        <Icon name="CreditCard" size={18} className="mr-2" />
                         Оформить заказ
                       </Button>
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden border-primary">
-                  <Icon name="Menu" size={20} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="bg-card border-border">
-                <SheetHeader>
-                  <SheetTitle>Меню</SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col gap-4 mt-8">
-                  {[
-                    { id: 'home', label: 'Главная', icon: 'Home' },
-                    { id: 'catalog', label: 'Каталог', icon: 'Grid' },
-                    { id: 'services', label: 'Услуги', icon: 'Settings' },
-                    { id: 'about', label: 'О нас', icon: 'Info' },
-                    { id: 'contacts', label: 'Контакты', icon: 'Mail' },
-                  ].map((item) => (
-                    <Button
-                      key={item.id}
-                      variant={activeSection === item.id ? 'default' : 'ghost'}
-                      className={activeSection === item.id ? 'bg-gradient-to-r from-primary to-yellow-500 text-black' : ''}
-                      onClick={() => setActiveSection(item.id)}
-                    >
-                      <Icon name={item.icon as any} className="mr-2" size={18} />
-                      {item.label}
-                    </Button>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[50vh] text-muted-foreground">
+                  <Icon name="ShoppingCart" size={64} className="mb-4 opacity-50" />
+                  <p>Добавьте товары в корзину</p>
+                </div>
+              )}
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
-      <main className="container py-8">
-        {renderSection()}
+      <main>
+        {activeSection === 'catalog' && renderCatalog()}
+        {activeSection === 'about' && renderAbout()}
+        {activeSection === 'contacts' && renderContacts()}
       </main>
 
       <footer className="border-t border-border mt-16 py-8">
