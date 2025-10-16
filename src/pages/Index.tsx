@@ -88,7 +88,7 @@ const Index = () => {
                 Премиум 3D Печать
               </Badge>
               <h1 className="text-5xl md:text-7xl font-bold mb-6 font-heading">
-                3D ПРИТОК
+                LorinPrint3D
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl">
                 Профессиональная 3D печать по вашим моделям. Высокое качество, быстрые сроки, доступные цены.
@@ -214,7 +214,7 @@ const Index = () => {
             <h2 className="text-4xl font-bold mb-6 font-heading">О нас</h2>
             <div className="space-y-6 text-lg text-muted-foreground">
               <p>
-                <span className="bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent font-bold text-2xl">3D ПРИТОК</span> — профессиональная студия 3D печати, 
+                <span className="bg-gradient-to-r from-primary to-yellow-500 bg-clip-text text-transparent font-bold text-2xl">LorinPrint3D</span> — профессиональная студия 3D печати, 
                 специализирующаяся на изготовлении деталей и прототипов по индивидуальным моделям клиентов.
               </p>
               <p>
@@ -304,7 +304,7 @@ const Index = () => {
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-yellow-500 flex items-center justify-center">
               <Icon name="Printer" className="text-black" size={20} />
             </div>
-            <span className="text-xl font-bold font-heading">3D ПРИТОК</span>
+            <span className="text-xl font-bold font-heading">LorinPrint3D</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -425,7 +425,7 @@ const Index = () => {
 
       <footer className="border-t border-border mt-16 py-8">
         <div className="container px-4 text-center text-muted-foreground">
-          <p className="text-sm">© 2024 3D ПРИТОК. Все права защищены.</p>
+          <p className="text-sm">© 2024 LorinPrint3D. Все права защищены.</p>
         </div>
       </footer>
     </div>
